@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <title>이미지 영역 하이라이트</title>
+</head>
+<body>
+    <div class="page">
+        <div class="page-header">
+            <h1>이미지 영역 하이라이트</h1>
+            <p class="subtitle">이미지를 불러와 원하는 영역을 드래그하면, 그 영역만 밝게 남고 나머지는 dim 처리됩니다.</p>
+        </div>
+
+        <div class="layout">
+            <div class="side-stack side-stack-controls">
+                <div class="field spacer-field" aria-hidden="true">
+                    <label>&nbsp;</label>
+                    <input type="text" tabindex="-1" style="visibility:hidden;">
+                </div>
+                <div class="panel controls">
+                    <div class="section">
+                        <h2>1. 이미지 불러오기</h2>
+                        <label class="file-btn">
+                            파일 선택
+                            <input type="file" id="fileInput" accept="image/*" style="display:none">
+                        </label>
+                    </div>
+
+                    <div class="section">
+                        <h2>2. 테두리 스타일</h2>
+                        <div class="field field-inline">
+                            <label for="colorInput">색상</label>
+                            <div class="color-picker">
+                <span class="color-swatch">
+                    <input type="color" id="colorInput" value="#ff0000">
+                </span>
+                                <span class="color-hex" id="colorHex">#FF0000</span>
+                            </div>
+                        </div>
+                        <div class="field">
+                            <label for="widthInput"><span>선 두께</span><span><span id="widthLabel">3</span>px</span></label>
+                            <input type="range" id="widthInput" min="1" max="20" value="3">
+                        </div>
+                        <div class="field">
+                            <label for="dimInput"><span>외부 어둡게(Dim)</span><span><span id="dimLabel">35</span>%</span></label>
+                            <input type="range" id="dimInput" min="0" max="90" value="35">
+                        </div>
+                    </div>
+
+                    <div class="section">
+                        <h2>3. 영역 목록</h2>
+                        <ul id="boxList"></ul>
+                        <div class="empty-note" id="emptyNote">아직 그려진 영역이 없습니다.</div>
+                    </div>
+
+                    <div class="section">
+                        <div class="row">
+                            <button id="undoBtn" disabled>실행 취소</button>
+                            <button id="clearBtn" disabled>전체 삭제</button>
+                        </div>
+                        <button id="resetImgBtn" disabled style="margin-top:8px; width:100%;">다른 이미지 불러오기</button>
+                        <button id="downloadBtn" class="primary" disabled style="margin-top:8px; width:100%;">이미지 다운로드</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="canvas-wrap">
+                <div class="canvas-stack">
+                    <div class="field">
+                        <label for="filenameInput">파일명</label>
+                        <input type="text" id="filenameInput" placeholder="image">
+                    </div>
+                    <div id="dropzone">
+                        <div id="placeholder">
+                            이미지를 여기에 드래그하거나<br>
+                            왼쪽에서 파일을 선택하거나<br>
+                            <b>Ctrl+V</b>로 붙여넣으세요.
+                        </div>
+                        <canvas id="canvas"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div class="side-stack side-stack-shortcuts">
+                <div class="field spacer-field" aria-hidden="true">
+                    <label>&nbsp;</label>
+                    <input type="text" tabindex="-1" style="visibility:hidden;">
+                </div>
+                <div class="panel shortcuts">
+                    <div class="section">
+                        <h2>단축키</h2>
+                        <ul class="shortcut-list">
+                            <li><span>영역 그리기</span><span class="kbd-group">드래그</span></li>
+                            <li><span>이미지 붙여넣기</span><span class="kbd-group"><kbd>Ctrl</kbd>+<kbd>V</kbd></span></li>
+                            <li><span>실행 취소</span><span class="kbd-group"><kbd>Ctrl</kbd>+<kbd>Z</kbd></span></li>
+                            <li><span>다시 실행</span><span class="kbd-group"><kbd>Ctrl</kbd>+<kbd>Y</kbd></span></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="app.js"></script>
+</body>
+</html>
