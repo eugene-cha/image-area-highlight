@@ -17,6 +17,7 @@ const boxList = document.getElementById('boxList');
 const emptyNote = document.getElementById('emptyNote');
 const filenameInput = document.getElementById('filenameInput');
 const noticeEl = document.getElementById('notice');
+const labelToggle = document.getElementById('labelToggle');
 
 // 이 거리(px) 이하로만 움직이고 마우스를 놓으면 드래그가 아닌 클릭으로 본다.
 const CLICK_MAX_MOVE = 4;
@@ -122,7 +123,7 @@ function normalizeBox(b) {
   const y = Math.min(b.y0, b.y1);
   const w = Math.abs(b.x1 - b.x0);
   const h = Math.abs(b.y1 - b.y0);
-  return { x, y, w, h, color: b.color, lineWidth: b.lineWidth };
+  return { x, y, w, h, color: b.color, lineWidth: b.lineWidth, labeled: b.labeled };
 }
 
 function redraw() {
@@ -141,7 +142,50 @@ function redraw() {
   if (previewBox) revealRegion(previewBox);
 
   boxes.forEach(b => drawBoxBorder(b));
+
+  // 번호 라벨은 번호가 붙은 박스끼리만 생성 순서대로 1, 2, 3... 으로 매긴다.
+  let labelNo = 0;
+  boxes.forEach(b => {
+    if (b.labeled) drawLabelBadge(b, ++labelNo);
+  });
+
   if (previewBox) drawSelectionMarquee(previewBox);
+}
+
+// 박스 좌측 상단 모서리에 붙는 번호 마크
+function drawLabelBadge(b, number) {
+  // 이미지 크기에 비례하되, 박스가 작으면 박스보다 커지지 않도록 줄인다.
+  let fontSize = Math.max(14, Math.min(40, Math.round(canvas.width / 50)));
+  fontSize = Math.max(8, Math.min(fontSize, Math.floor(b.h * 0.5), Math.floor(b.w * 0.5)));
+
+  ctx.save();
+  ctx.font = `bold ${fontSize}px "Segoe UI", "Malgun Gothic", sans-serif`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+
+  const text = String(number);
+  const padX = Math.round(fontSize * 0.4);
+  const badgeH = Math.round(fontSize * 1.5);
+  const badgeW = Math.max(badgeH, Math.ceil(ctx.measureText(text).width) + padX * 2);
+
+  ctx.fillStyle = b.color;
+  ctx.beginPath();
+  if (ctx.roundRect) ctx.roundRect(b.x, b.y, badgeW, badgeH, Math.round(fontSize * 0.25));
+  else ctx.rect(b.x, b.y, badgeW, badgeH);
+  ctx.fill();
+
+  ctx.fillStyle = readableTextColor(b.color);
+  ctx.fillText(text, b.x + badgeW / 2, b.y + badgeH / 2 + 1);
+  ctx.restore();
+}
+
+// 배경색(#rrggbb) 위에서 잘 보이는 글자색(흰색/검정)
+function readableTextColor(hex) {
+  const m = /^#?([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i.exec(hex);
+  if (!m) return '#ffffff';
+  const [r, g, b] = [m[1], m[2], m[3]].map(v => parseInt(v, 16));
+  const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+  return luminance > 0.6 ? '#000000' : '#ffffff';
 }
 
 function revealRegion(b) {
@@ -184,7 +228,8 @@ function startDrag(e) {
   currentBox = {
     x0: pos.x, y0: pos.y, x1: pos.x, y1: pos.y,
     color: colorInput.value,
-    lineWidth: Number(widthInput.value)
+    lineWidth: Number(widthInput.value),
+    labeled: labelToggle.checked   // 박스를 만드는 시점의 설정값을 박스에 저장
   };
   e.preventDefault();
 }
@@ -202,7 +247,7 @@ function endDrag() {
   if (!dragging) return;
   dragging = false;
   const start = { x: currentBox.x0, y: currentBox.y0 };
-  const style = { color: currentBox.color, lineWidth: currentBox.lineWidth };
+  const style = { color: currentBox.color, lineWidth: currentBox.lineWidth, labeled: currentBox.labeled };
   const finalized = normalizeBox(currentBox);
   currentBox = null;
   if (finalized.w <= CLICK_MAX_MOVE && finalized.h <= CLICK_MAX_MOVE) {
@@ -255,7 +300,7 @@ function autoHighlightAt(x, y, style) {
   }
   addBox({
     x: found.x, y: found.y, w: found.w, h: found.h,
-    color: style.color, lineWidth: style.lineWidth
+    color: style.color, lineWidth: style.lineWidth, labeled: style.labeled
   });
   redraw();
 }
@@ -278,10 +323,12 @@ canvas.addEventListener('touchend', endDrag);
 function renderBoxList() {
   boxList.innerHTML = '';
   emptyNote.style.display = boxes.length === 0 ? 'block' : 'none';
+  let labelNo = 0;
   boxes.forEach((b, i) => {
     const li = document.createElement('li');
     const span = document.createElement('span');
-    span.textContent = `#${i + 1}  ${Math.round(b.w)}×${Math.round(b.h)} px`;
+    const labelText = b.labeled ? `  · 번호 ${++labelNo}` : '';
+    span.textContent = `#${i + 1}  ${Math.round(b.w)}×${Math.round(b.h)} px${labelText}`;
     const del = document.createElement('button');
     del.textContent = '삭제';
     del.addEventListener('click', () => {
