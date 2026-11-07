@@ -213,9 +213,9 @@ function drawBoxBorder(b) {
 
 function drawSelectionMarquee(b) {
   ctx.save();
-  ctx.fillStyle = 'rgba(92, 173, 128, 0.20)';
+  ctx.fillStyle = 'rgba(166, 220, 124, 0.28)';
   ctx.fillRect(b.x, b.y, b.w, b.h);
-  ctx.strokeStyle = 'rgba(92, 173, 128, 0.9)';
+  ctx.strokeStyle = 'rgba(104, 178, 58, 0.95)';
   ctx.lineWidth = 1;
   ctx.strokeRect(b.x + 0.5, b.y + 0.5, Math.max(b.w - 1, 0), Math.max(b.h - 1, 0));
   ctx.restore();
@@ -451,6 +451,7 @@ const sidebarEl = document.getElementById('sidebar');
 const sideButtons = document.querySelectorAll('.seg button[data-side]');
 const collapseBtn = document.getElementById('sidebarCollapseBtn');
 const accHeads = document.querySelectorAll('.acc-head');
+const themeBtn = document.getElementById('themeBtn');
 
 // 사용자 설정은 브라우저에 저장한다. (저장이 막힌 환경에서는 저장 없이 동작)
 function readPref(key) {
@@ -491,6 +492,24 @@ function setAccordion(head, open, persist) {
   if (persist) writePref('acc:' + head.id, open ? '1' : '0');
 }
 
+// 테마(다크/라이트). 첫 페인트 전 적용은 index.html 의 head 스크립트가 담당한다.
+function updateThemeButton() {
+  const isDark = document.documentElement.dataset.theme === 'dark';
+  const label = isDark ? '라이트 모드로 전환' : '다크 모드로 전환';
+  themeBtn.setAttribute('aria-label', label);
+  themeBtn.title = label;
+}
+
+function setTheme(theme, persist) {
+  document.documentElement.dataset.theme = theme === 'dark' ? 'dark' : 'light';
+  updateThemeButton();
+  if (persist) writePref('theme', document.documentElement.dataset.theme);
+}
+
+themeBtn.addEventListener('click', () => {
+  setTheme(document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark', true);
+});
+
 sideButtons.forEach(btn => btn.addEventListener('click', () => setSidebarSide(btn.dataset.side, true)));
 collapseBtn.addEventListener('click', () => {
   setSidebarCollapsed(sidebarEl.dataset.collapsed !== 'true', true);
@@ -501,7 +520,8 @@ accHeads.forEach(head => {
   });
 });
 
-// 저장된 설정 복원 (없으면 좌측, 펼침, 모든 구역 열림)
+// 저장된 설정 복원 (없으면 다크, 좌측, 펼침, 모든 구역 열림)
+updateThemeButton();
 setSidebarSide(readPref('sidebarSide'), false);
 setSidebarCollapsed(readPref('sidebarCollapsed') === '1', false);
 accHeads.forEach(head => {

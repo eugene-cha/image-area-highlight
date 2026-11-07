@@ -5,20 +5,33 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="style.css">
     <title>이미지 영역 하이라이트</title>
+    <script>
+        (function () {
+            var theme = 'light';
+            try { if (localStorage.getItem('theme') === 'dark') theme = 'dark'; } catch (e) {}
+            document.documentElement.setAttribute('data-theme', theme);
+        })();
+    </script>
 </head>
 <body>
     <div class="app" id="app" data-sidebar="left">
         <aside class="panel sidebar" id="sidebar" data-collapsed="false">
             <div class="sidebar-bar">
                 <div class="sidebar-side">
-                    <span id="sidebarSideLabel">사이드바 위치</span>
+                    <span id="sidebarSideLabel">위치</span>
                     <div class="seg" role="group" aria-labelledby="sidebarSideLabel">
                         <button type="button" id="sideLeftBtn" data-side="left" aria-pressed="true">좌측</button>
                         <button type="button" id="sideRightBtn" data-side="right" aria-pressed="false">우측</button>
                     </div>
                 </div>
-                <button type="button" class="icon-btn" id="sidebarCollapseBtn" aria-controls="sidebarBody"
-                        aria-expanded="true" aria-label="사이드바 접기" title="사이드바 접기">‹</button>
+                <div class="sidebar-tools">
+                    <button type="button" class="icon-btn" id="themeBtn" aria-label="라이트 모드로 전환" title="라이트 모드로 전환">
+                        <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+                        <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+                    </button>
+                    <button type="button" class="icon-btn" id="sidebarCollapseBtn" aria-controls="sidebarBody"
+                            aria-expanded="true" aria-label="사이드바 접기" title="사이드바 접기">‹</button>
+                </div>
             </div>
 
             <div class="sidebar-body" id="sidebarBody">
@@ -28,15 +41,16 @@
                     </button>
                     <div class="acc-body controls" id="accWorkBody">
                         <div class="section">
-                            <h2>1. 이미지 불러오기</h2>
+                            <h2><span class="step">1</span>이미지 불러오기</h2>
                             <label class="file-btn">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
                                 파일 선택
                                 <input type="file" id="fileInput" accept="image/*" style="display:none">
                             </label>
                         </div>
 
                         <div class="section">
-                            <h2>2. 테두리 스타일</h2>
+                            <h2><span class="step">2</span>테두리 스타일</h2>
                             <div class="field field-inline">
                                 <label for="colorInput">색상</label>
                                 <div class="color-picker">
@@ -64,7 +78,7 @@
                         </div>
 
                         <div class="section">
-                            <h2>3. 영역 목록</h2>
+                            <h2><span class="step">3</span>영역 목록</h2>
                             <ul id="boxList"></ul>
                             <div class="empty-note" id="emptyNote">아직 그려진 영역이 없습니다.</div>
                         </div>
@@ -105,6 +119,9 @@
                 </div>
                 <div id="dropzone">
                     <div id="placeholder">
+                        <div class="placeholder-icon" aria-hidden="true">
+                            <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+                        </div>
                         이미지를 여기에 드래그하거나<br>
                         사이드바에서 파일을 선택하거나<br>
                         <b>Ctrl+V</b>로 붙여넣으세요.
