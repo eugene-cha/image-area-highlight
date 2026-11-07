@@ -445,4 +445,68 @@ downloadBtn.addEventListener('click', () => {
   link.click();
 });
 
+// ---- 사이드바: 위치(좌/우), 전체 접기, 구역(작업 패널/단축키 가이드) 펼침·접힘 ----
+const appEl = document.getElementById('app');
+const sidebarEl = document.getElementById('sidebar');
+const sideButtons = document.querySelectorAll('.seg button[data-side]');
+const collapseBtn = document.getElementById('sidebarCollapseBtn');
+const accHeads = document.querySelectorAll('.acc-head');
+
+// 사용자 설정은 브라우저에 저장한다. (저장이 막힌 환경에서는 저장 없이 동작)
+function readPref(key) {
+  try { return localStorage.getItem(key); } catch (err) { return null; }
+}
+function writePref(key, value) {
+  try { localStorage.setItem(key, value); } catch (err) { /* 무시 */ }
+}
+
+function setSidebarSide(side, persist) {
+  if (side !== 'left' && side !== 'right') side = 'left';
+  appEl.dataset.sidebar = side;
+  sideButtons.forEach(btn => btn.setAttribute('aria-pressed', String(btn.dataset.side === side)));
+  updateCollapseArrow();
+  if (persist) writePref('sidebarSide', side);
+}
+
+// 펼친 상태에서는 가까운 화면 가장자리 쪽(접히는 방향), 접힌 상태에서는 반대쪽(펼쳐지는 방향) 화살표
+function updateCollapseArrow() {
+  const edgeIsLeft = appEl.dataset.sidebar === 'left';
+  const collapsed = sidebarEl.dataset.collapsed === 'true';
+  collapseBtn.textContent = (edgeIsLeft !== collapsed) ? '‹' : '›';
+}
+
+function setSidebarCollapsed(collapsed, persist) {
+  sidebarEl.dataset.collapsed = String(collapsed);
+  const label = collapsed ? '사이드바 펼치기' : '사이드바 접기';
+  collapseBtn.setAttribute('aria-expanded', String(!collapsed));
+  collapseBtn.setAttribute('aria-label', label);
+  collapseBtn.title = label;
+  updateCollapseArrow();
+  if (persist) writePref('sidebarCollapsed', collapsed ? '1' : '0');
+}
+
+function setAccordion(head, open, persist) {
+  head.setAttribute('aria-expanded', String(open));
+  document.getElementById(head.getAttribute('aria-controls')).hidden = !open;
+  if (persist) writePref('acc:' + head.id, open ? '1' : '0');
+}
+
+sideButtons.forEach(btn => btn.addEventListener('click', () => setSidebarSide(btn.dataset.side, true)));
+collapseBtn.addEventListener('click', () => {
+  setSidebarCollapsed(sidebarEl.dataset.collapsed !== 'true', true);
+});
+accHeads.forEach(head => {
+  head.addEventListener('click', () => {
+    setAccordion(head, head.getAttribute('aria-expanded') !== 'true', true);
+  });
+});
+
+// 저장된 설정 복원 (없으면 좌측, 펼침, 모든 구역 열림)
+setSidebarSide(readPref('sidebarSide'), false);
+setSidebarCollapsed(readPref('sidebarCollapsed') === '1', false);
+accHeads.forEach(head => {
+  const saved = readPref('acc:' + head.id);
+  setAccordion(head, saved === null ? true : saved === '1', false);
+});
+
 setControlsEnabled(false);
