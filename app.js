@@ -520,7 +520,50 @@ accHeads.forEach(head => {
   });
 });
 
-// 저장된 설정 복원 (없으면 다크, 좌측, 펼침, 모든 구역 열림)
+// ---- 테두리 스타일 설정 기억 (색상, 선 두께, 외부 어둡게, 번호 라벨) ----
+// 브라우저 localStorage 에 JSON 하나로 저장하고, 다음 방문 때 그대로 복원한다.
+const STYLE_KEY = 'style';
+
+function saveStyleSettings() {
+  writePref(STYLE_KEY, JSON.stringify({
+    color: colorInput.value,
+    width: Number(widthInput.value),
+    dim: Number(dimInput.value),
+    labeled: labelToggle.checked
+  }));
+}
+
+// 슬라이더에 저장된 값을 적용한다. 숫자가 아니면 무시하고, 범위를 벗어나면 범위 안으로 맞춘다.
+function applySavedRange(input, label, value) {
+  const n = Number(value);
+  if (value === null || value === undefined || !Number.isFinite(n)) return;
+  input.value = String(Math.min(Number(input.max), Math.max(Number(input.min), Math.round(n))));
+  label.textContent = input.value;
+  updateRangeFill(input);
+}
+
+// 저장된 값이 손상되었거나 형식이 틀려도 앱이 깨지지 않도록 항목별로 검증해서 적용한다.
+function restoreStyleSettings() {
+  let saved = null;
+  try { saved = JSON.parse(readPref(STYLE_KEY)); } catch (err) { return; }
+  if (!saved || typeof saved !== 'object') return;
+
+  if (typeof saved.color === 'string' && /^#[0-9a-f]{6}$/i.test(saved.color)) {
+    colorInput.value = saved.color.toLowerCase();
+    colorHex.textContent = colorInput.value.toUpperCase();
+  }
+  applySavedRange(widthInput, widthLabel, saved.width);
+  applySavedRange(dimInput, dimLabel, saved.dim);
+  if (typeof saved.labeled === 'boolean') labelToggle.checked = saved.labeled;
+}
+
+[colorInput, widthInput, dimInput, labelToggle].forEach(el => {
+  el.addEventListener('input', saveStyleSettings);
+  el.addEventListener('change', saveStyleSettings);
+});
+
+// 저장된 설정 복원 (없으면 라이트, 좌측, 펼침, 모든 구역 열림, 기본 스타일)
+restoreStyleSettings();
 updateThemeButton();
 setSidebarSide(readPref('sidebarSide'), false);
 setSidebarCollapsed(readPref('sidebarCollapsed') === '1', false);
