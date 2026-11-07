@@ -473,7 +473,7 @@ function setSidebarSide(side, persist) {
 function updateCollapseArrow() {
   const edgeIsLeft = appEl.dataset.sidebar === 'left';
   const collapsed = sidebarEl.dataset.collapsed === 'true';
-  collapseBtn.textContent = (edgeIsLeft !== collapsed) ? '‹' : '›';
+  collapseBtn.dataset.dir = (edgeIsLeft !== collapsed) ? 'left' : 'right';
 }
 
 function setSidebarCollapsed(collapsed, persist) {

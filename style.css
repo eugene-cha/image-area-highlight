@@ -4,10 +4,10 @@
        ================================================================ */
     :root {
         color-scheme: light;
-        --bg: #f5f5f5;
+        --bg: #fafbfc;
         --panel: #ffffff;
-        --surface: #f6f6f6;
-        --surface-hover: #ebebeb;
+        --surface: #f6f7f8;
+        --surface-hover: #ecedef;
         --stage: #ffffff;
         --dot: rgba(0, 0, 0, 0.08);
         --border: rgba(0, 0, 0, 0.14);
@@ -152,6 +152,8 @@
         stroke-linecap: round;
         stroke-linejoin: round;
     }
+    #sidebarCollapseBtn svg { transition: transform 0.15s; }
+    #sidebarCollapseBtn[data-dir="right"] svg { transform: scaleX(-1); }
     /* 테마 아이콘: 다크일 땐 해(라이트로 전환), 라이트일 땐 달(다크로 전환) */
     :root[data-theme="dark"] .icon-moon,
     :root[data-theme="light"] .icon-sun { display: none; }
