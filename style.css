@@ -60,6 +60,8 @@
     }
 
     * { box-sizing: border-box; }
+    /* display 를 지정한 요소(.controls 등)에서도 hidden 속성이 항상 우선하도록 한다 */
+    [hidden] { display: none !important; }
     body {
         margin: 0;
         font-family: var(--font);
