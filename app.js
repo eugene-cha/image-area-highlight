@@ -16,8 +16,14 @@ const downloadBtn = document.getElementById('downloadBtn');
 const boxList = document.getElementById('boxList');
 const emptyNote = document.getElementById('emptyNote');
 const filenameInput = document.getElementById('filenameInput');
+const noticeEl = document.getElementById('notice');
+
+// 이 거리(px) 이하로만 움직이고 마우스를 놓으면 드래그가 아닌 클릭으로 본다.
+const CLICK_MAX_MOVE = 4;
 
 let currentImage = null;
+let detectionData = null;
+let detectionFor = null;
 let boxes = [];
 let dragging = false;
 let currentBox = null;
@@ -195,15 +201,71 @@ function moveDrag(e) {
 function endDrag() {
   if (!dragging) return;
   dragging = false;
+  const start = { x: currentBox.x0, y: currentBox.y0 };
+  const style = { color: currentBox.color, lineWidth: currentBox.lineWidth };
   const finalized = normalizeBox(currentBox);
   currentBox = null;
+  if (finalized.w <= CLICK_MAX_MOVE && finalized.h <= CLICK_MAX_MOVE) {
+    // 드래그 없이 클릭만 한 경우: 클릭 지점을 감싸는 테두리 박스를 자동 감지
+    autoHighlightAt(start.x, start.y, style);
+    return;
+  }
   if (finalized.w > 3 && finalized.h > 3) {
-    boxes.push(finalized);
-    redoStack = [];
-    renderBoxList();
-    setControlsEnabled(true);
+    addBox(finalized);
   }
   redraw();
+}
+
+function addBox(box) {
+  boxes.push(box);
+  redoStack = [];
+  renderBoxList();
+  setControlsEnabled(true);
+}
+
+// 원본 이미지의 픽셀 데이터 (이미지가 바뀔 때만 다시 만든다)
+function getDetectionData() {
+  if (detectionFor === currentImage) return detectionData;
+  detectionFor = currentImage;
+  detectionData = null;
+  try {
+    const off = document.createElement('canvas');
+    off.width = currentImage.naturalWidth;
+    off.height = currentImage.naturalHeight;
+    const offCtx = off.getContext('2d', { willReadFrequently: true });
+    offCtx.drawImage(currentImage, 0, 0);
+    detectionData = offCtx.getImageData(0, 0, off.width, off.height);
+  } catch (err) {
+    detectionData = null;
+  }
+  return detectionData;
+}
+
+function autoHighlightAt(x, y, style) {
+  redraw();
+  const data = getDetectionData();
+  if (!data) {
+    showNotice('이미지 데이터를 읽을 수 없어 자동 감지를 할 수 없습니다.');
+    return;
+  }
+  const found = AutoDetect.detectBoxAt(data, x, y);
+  if (!found) {
+    showNotice('클릭한 위치에서 테두리 박스를 찾지 못했습니다.');
+    return;
+  }
+  addBox({
+    x: found.x, y: found.y, w: found.w, h: found.h,
+    color: style.color, lineWidth: style.lineWidth
+  });
+  redraw();
+}
+
+let noticeTimer = null;
+function showNotice(message) {
+  noticeEl.textContent = message;
+  noticeEl.classList.add('show');
+  clearTimeout(noticeTimer);
+  noticeTimer = setTimeout(() => noticeEl.classList.remove('show'), 2000);
 }
 
 canvas.addEventListener('mousedown', startDrag);

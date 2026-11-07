@@ -300,6 +300,21 @@
         line-height: 1.7;
         padding: 52px;
     }
+    #notice {
+        position: absolute;
+        left: 50%;
+        bottom: 20px;
+        transform: translateX(-50%);
+        background: rgba(0, 0, 0, 0.75);
+        color: #fff;
+        font-size: 14px;
+        padding: 8px 16px;
+        border-radius: var(--radius-sm);
+        pointer-events: none;
+        opacity: 0;
+        transition: opacity 0.2s;
+    }
+    #notice.show { opacity: 1; }
     #placeholder b { color: var(--primary); font-weight: 600; }
     #canvas {
         display: none;
